@@ -1,18 +1,22 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Teacher, TeacherProfile
-from classes.models import Class
+from .models import Teacher, TeacherProfile, ClassTeacher
 from assignments.models import Assignment
 from announcements.models import Announcement
+from classes.serializers import ClassInlineSerializer, Class
 
 User=get_user_model()
 
 class TeacherCreateSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='teacher-detail', read_only=True)
+    password = serializers.CharField(write_only=True)
 
     def create(self, validated_data):
         email = validated_data.get('email')
         password = validated_data.get('password')
-        teacher = Teacher.objects.create_user(email=email, password=password)
+        print(validated_data)
+        teacher = User(**validated_data)
+        teacher.set_password(password)
         teacher.is_active = True
         teacher.role = User.Role.STAFF
         teacher.save()
@@ -23,19 +27,31 @@ class TeacherCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Teacher
-        fields = ('email','firstname','lastname','role','password')
+        fields = ('id', 'email','firstname','lastname','role','url', 'password')
+
 
 class TeacherDetailSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
 
     def to_representation(self, instance):
         data = super(TeacherDetailSerializer, self).to_representation(instance)
         data.update({
-            'classes': Class.objects.filter(teachers__user=instance),
-            'assignments_given': Assignment.objects.filter(given_by__user=instance),
-            'announcements': Announcement.objects.filter(posted_by__user=instance)
+            'classes': ClassInlineSerializer(Class.objects.filter(membership__teacher__user=instance), many=True, context=self.context).data,
+            'assignments_given': Assignment.objects.filter(given_by__user=instance).count(),
+            'announcements': Announcement.objects.filter(posted_by__user=instance).count(),
+            'classes_created': ClassTeacher.objects.filter(class_name__created_by__user=instance).count()
         })
 
         return data
+
+    def update(self, instance, validated_data):
+        instance.firstname = validated_data.get('firstname')
+        instance.lastname = validated_data.get('lastname')
+        instance.set_password(validated_data.get('password'))
+        instance.save()
+        return instance
+
     class Meta:
         model = Teacher
-        fields = ('email','firstname','lastname','role')
+        fields = ('email','firstname','lastname', 'password')
+
