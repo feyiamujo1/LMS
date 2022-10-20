@@ -1,3 +1,4 @@
+from datetime import timezone
 from django.db import models
 from teachers.models import TeacherProfile
 from students.models import StudentProfile
@@ -22,21 +23,27 @@ class Solution(models.Model):
     student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE)
     body = models.TextField(max_length=2000, blank=True, null=True)
     attachment = models.FileField(upload_to="solutions/",max_length=20000, null=True,blank=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_submitted = models.DateTimeField(null=True, blank=True)
     completed = models.BooleanField(default=False)
     turn_in = models.BooleanField(default=False)
+    date_marked = models.DateTimeField(null=True, blank=True)
 
     def __str__(self) -> str:
         return f"{self.assignment}, {self.student}"
 
     def submit(self):
         self.turn_in = True
+        self.date_submitted = timezone.now()
 
     def mark_complete(self):
         self.completed = True
+        self.date_marked = timezone.now()
 
 class Remark(models.Model):
     solution = models.ForeignKey(Solution, on_delete=models.CASCADE)
     body = models.TextField(max_length=200)
+    date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
         return f"Remark {self.solution}"

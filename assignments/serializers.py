@@ -7,6 +7,8 @@ User = get_user_model()
 class AssignmentSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='assignment-detail',
             lookup_field='pk', read_only=True)
+    given_to = serializers.StringRelatedField()
+    given_by = serializers.StringRelatedField()
             
     class Meta:
         model = Assignment

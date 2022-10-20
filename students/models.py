@@ -19,7 +19,18 @@ class StudentProfile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     picture = models.ImageField(null=True, blank=True, upload_to="images/")
     student_id = models.IntegerField(null=True, blank=True)
-    classes = models.ManyToManyField(Class, related_name="students")
+    classes = models.ManyToManyField(Class, through='ClassStudent', related_name="students")
+
+    def __str__(self) -> str:
+        return "Student %r" % self.user
+
+class ClassStudent(models.Model):
+    student = models.ForeignKey(StudentProfile, related_name='studentship', on_delete=models.CASCADE)
+    class_name = models.ForeignKey(Class, related_name='studentship', on_delete=models.CASCADE)
+    date_added = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('student', 'class_name',)
 
 @receiver(post_save, sender=Student)
 def create_user_profile(sender, instance, created, **kwargs):

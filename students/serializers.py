@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from classes.models import Class
 
 from classes.serializers import ClassInlineSerializer
-from .models import Student, StudentProfile
+from .models import Student, StudentProfile, ClassStudent
 from assignments.models import Assignment
 from announcements.models import Announcement
 
@@ -55,4 +55,13 @@ class StudentDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
         fields = ('email', 'firstname', 'lastname', 'password') 
+
+class ClassStudentCreateSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='studentship-detail', lookup_field='pk', read_only=True)
+    student = serializers.StringRelatedField()
+    class_name = serializers.StringRelatedField()
+
+    class Meta:
+        model = ClassStudent
+        fields = ('url', 'student', 'class_name', 'date_added')
 

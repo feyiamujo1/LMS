@@ -29,9 +29,13 @@ class ClassTeacher(models.Model):
     teacher = models.ForeignKey(TeacherProfile, related_name='adminship', on_delete=models.CASCADE)
     class_name = models.ForeignKey(Class, related_name='membership', on_delete=models.CASCADE)
     admin = models.BooleanField(default=False)
+    date_added = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
         return f"{self.teacher} on {self.class_name}"
+
+    class Meta:
+        unique_together = ('teacher', 'class_name',)
 
 @receiver(post_save, sender=Teacher)
 def create_user_profile(sender, instance, created, **kwargs):
