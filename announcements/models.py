@@ -9,7 +9,7 @@ class Announcement(models.Model):
     posted_to = models.ForeignKey(Class, on_delete=models.CASCADE)
     title = models.CharField(max_length=30, null=True, blank=True)
     body = models.TextField(max_length=300)
-    attachment = models.FileField(max_length=20000, upload_to="files/")
+    attachment = models.FileField(max_length=20000, upload_to="files/", null=True, blank=True)
     date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
