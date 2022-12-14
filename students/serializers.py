@@ -35,7 +35,7 @@ class StudentDetailSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
     def to_representation(self, instance):
-        print(instance, Class.objects.all().first().students)
+        # print(instance, Class.objects.all().first().students)
         data = super(StudentDetailSerializer, self).to_representation(instance)
         data.update({
             'classes' : ClassInlineSerializer(Class.objects.filter(students__user=instance), many=True, context=self.context).data,

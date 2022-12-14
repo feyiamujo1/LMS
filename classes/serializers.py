@@ -52,13 +52,13 @@ class ClassDetailSerializer(serializers.ModelSerializer):
         return data
     class Meta:
         model = Class
-        fields = ('url','id', 'name', 'session', 'created_by')
+        fields = ('url','id', 'name', 'session', 'description', 'created_by')
 
 class ClassListCreateSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='class-detail', read_only=True)
     class Meta:
         model = Class
-        fields = ('url','name', 'session', 'date_created', 'created_by')
+        fields = ('url','name', 'session', 'description', 'date_created', 'created_by')
 
 
 class ClassInlineSerializer(serializers.Serializer):

@@ -38,13 +38,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
     'users',
     'students',
     'teachers',
     'announcements',
     'assignments',
     'classes',
-    'rest_framework'
+    'quizzes',
 ]
 
 MIDDLEWARE = [
@@ -137,3 +139,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 AUTH_USER_MODEL = 'users.User'
+
+auth_classes = [
+    'rest_framework.authentication.SessionAuthentiication',
+    'users.authentication.TokenAuthentication',
+]
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        'rest_framework.authentication.SessionAuthentication',
+        'users.authentication.TokenAuthentication',
+    ]
+}
