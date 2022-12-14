@@ -62,6 +62,7 @@ class ClassListCreateSerializer(serializers.ModelSerializer):
 
 
 class ClassInlineSerializer(serializers.Serializer):
+    id = serializers.PrimaryKeyRelatedField(queryset=Class.objects.all())
     url = serializers.HyperlinkedIdentityField(view_name='class-detail', lookup_field='pk', read_only=True)
     name = serializers.CharField(read_only=True)
     session = serializers.CharField(read_only=True)

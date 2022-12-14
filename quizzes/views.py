@@ -6,7 +6,8 @@ from .models import Quiz, Question, AnswerChoice, Answer, QuizSolution, Score
 from .serializers import (QuizCreateSerializer, QuestionCreateSerializer,
      AnswerCreateSerializer, QuizSolutionCreateSerializer, AnswerChoiceSerializer,
       ScoreSerializer, QuestionListSerializer,
-      QuizUpdateSerializer, QuizWithQuestionsSerializer)
+      QuizUpdateSerializer, QuizWithQuestionsSerializer, RemoveQuestionSerializer,
+      QuizClassGetSerializer)
 from teachers.models import TeacherProfile
 from users import authentication
 from rest_framework import authentication as r_auth
@@ -23,9 +24,8 @@ class QuizAPIView(ListCreateAPIView):
         r_auth.BasicAuthentication,
         r_auth.SessionAuthentication,
     ]
-    
+
     def perform_create(self, serializer):
-        # print(self.request.user.role)
         if self.request.user.role == "STAFF":
             serializer.save(created_by=TeacherProfile.objects.get(user=self.request.user))
         else:
@@ -50,6 +50,10 @@ class QuizUpdateView(RetrieveUpdateAPIView):
         'Physics, 2019/2020', 
         'date_created': '2022-12-12T13:33:03.659028Z', 
         'last_updated': '2022-12-14T09:53:36.238158Z'
+    }
+
+    {
+        'detail': 'Not found'
     }
     """
     queryset = Quiz.objects.all()
@@ -193,8 +197,44 @@ class QuizCreateWithMultipleQuestions(APIView):
             saved_question=QuestionCreateAPIView.perform_create(self, serializer=QuestionCreateSerializer(data=question))
             response['questions'].append(saved_question)
         return Response(response, status=status.HTTP_201_CREATED)
-        
+    
 
+class RemoveQuestionFromQuizView(APIView):
+    # serializer_class = RemoveQuestionSerializer
+    """
+    Request:
+    {
+        "questions":
+        [2,3,7,8,9,10,11,12,13,14,15,16,17]
+    }
+
+    """
+    def get(self, request, **kwargs):
+        quiz = Quiz.objects.filter(id=kwargs['pk']).first()
+        if hasattr(quiz, 'id'):
+            return Response(QuizCreateSerializer(quiz, context={'request': request}, many=False).data, status=status.HTTP_200_OK)
+        return Response({'detail':'Not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, **kwargs):
+        quiz = Quiz.objects.filter(id=kwargs['pk']).first()
+        if hasattr(quiz, 'id'):
+            if 'questions' in request.data:
+                for id in request.data['questions']:
+                    question =  Question.objects.get(id=id)
+                    if hasattr(question, 'id') and question in quiz.questions.all():
+                        quiz.questions.remove(question)
+                        quiz.refresh_from_db()
+                    else:
+                        # return Response({'detail':'Not found'}, status=status.HTTP_404_NOT_FOUND)
+                        continue
+            return Response(QuizCreateSerializer(quiz, context={'request': request}, many=False).data, status=status.HTTP_202_ACCEPTED)
+        return Response({'detail':'Not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class GetQuizzesByCreatorWithClass(APIView):
+    serializer_class = QuizClassGetSerializer
+    def get(self, request, *args, **kwargs):
+        data = Quiz.objects.filter(created_by=TeacherProfile.objects.get(user=request.user.id), created_for=request.data['class_id']).all()
+        return Response(QuizCreateSerializer(data, many=True, context={'request': request}).data, status=status.HTTP_200_OK)
 
 
 class AnswerCreateAPIView(ListCreateAPIView):
