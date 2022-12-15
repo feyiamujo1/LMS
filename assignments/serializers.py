@@ -34,13 +34,13 @@ class UserProfileField(serializers.RelatedField):
     def to_representation(self, value):
         return {'id':value.pk, 'user name': f"{value.user.firstname} {value.user.lastname}"}
 
-class ClassField(serializers.RelatedField):
+class CourseField(serializers.RelatedField):
     def to_representation(self, value):
-        return {'id': value.pk, 'class name': value.name}
+        return {'id': value.pk, 'course name': value.name}
 
 class AssignmentWithCourseSerializer(serializers.ModelSerializer):
     teacher = UserProfileField(read_only=True, source='given_by')
-    course = ClassField(read_only=True, source='given_to')
+    course = CourseField(read_only=True, source='given_to')
     class Meta:
         model = Assignment
         fields = ('given_by', 'title', 'body', 'attachment', 

@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Teacher, TeacherProfile, ClassTeacher
+from .models import Teacher, TeacherProfile, CourseTeacher
 from assignments.models import Assignment
 from announcements.models import Announcement
-from classes.serializers import ClassInlineSerializer, Class
+from classes.serializers import CourseInlineSerializer, Course
 
 User=get_user_model()
 
@@ -36,10 +36,10 @@ class TeacherDetailSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super(TeacherDetailSerializer, self).to_representation(instance)
         data.update({
-            'classes': ClassInlineSerializer(Class.objects.filter(membership__teacher__user=instance), many=True, context=self.context).data,
+            'courses': CourseInlineSerializer(Course.objects.filter(membership__teacher__user=instance), many=True, context=self.context).data,
             'assignments_given': Assignment.objects.filter(given_by__user=instance).count(),
             'announcements': Announcement.objects.filter(posted_by__user=instance).count(),
-            'classes_created': ClassTeacher.objects.filter(class_name__created_by__user=instance).count()
+            'courses_created': CourseTeacher.objects.filter(course__created_by__user=instance).count()
         })
 
         return data

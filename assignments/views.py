@@ -5,7 +5,7 @@ from .serializers import (AssignmentDetailSerializer,
 from .models import Assignment
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from teachers.models import TeacherProfile
-from classes.models import Class
+from classes.models import Course
 from rest_framework.response import Response
 from rest_framework import status
 # Create your views here.
@@ -33,18 +33,18 @@ class GetAssignmentsGivenToClassByTeacher(ListCreateAPIView):
     def get_queryset(self):
         teacher_id = TeacherProfile.objects.filter(user=self.request.user.id).first()
         course = self.request.data.get('course_id')
-        get_course = Class.objects.filter(id=course).first()
+        get_course = Course.objects.filter(id=course).first()
         if hasattr(get_course, 'id'):
             return self.queryset.filter(given_by=teacher_id, given_to=get_course)
-        return Response({'detail':'class not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'detail':'course not found'}, status=status.HTTP_404_NOT_FOUND)
 
     def perform_create(self, serializer):
         teacher_id = TeacherProfile.objects.filter(user=self.request.user.id).first()
         course = self.request.data.get('course_id')
-        get_course = Class.objects.filter(id=course).first()
+        get_course = Course.objects.filter(id=course).first()
         if hasattr(get_course, 'id'):
             serializer.save(given_by=teacher_id, given_to=get_course)
-        return Response({'detail':'class not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'detail':'course not found'}, status=status.HTTP_404_NOT_FOUND)
 
 class AssignmentDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Assignment.objects.all()

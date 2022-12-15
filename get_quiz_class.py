@@ -7,7 +7,7 @@ headers = {
 }
 
 data = {
-    'class_id': 2,
+    'course_id': 2,
 }
 
 response = requests.get(endpoint, headers=headers, json=data)

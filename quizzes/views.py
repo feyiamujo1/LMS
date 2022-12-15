@@ -7,13 +7,14 @@ from .serializers import (QuizCreateSerializer, QuestionCreateSerializer,
      AnswerCreateSerializer, QuizSolutionCreateSerializer, AnswerChoiceSerializer,
       ScoreSerializer, QuestionListSerializer,
       QuizUpdateSerializer, QuizWithQuestionsSerializer, RemoveQuestionSerializer,
-      QuizClassGetSerializer)
+      QuizCourseGetSerializer)
 from teachers.models import TeacherProfile
 from users import authentication
 from rest_framework import authentication as r_auth
 from .permissions import IsAdminOrTeacherPermission
 from rest_framework import serializers, status
 from rest_framework.response import Response
+from classes.models import Course
 # Create your views here.
 
 class QuizAPIView(ListCreateAPIView):
@@ -230,11 +231,16 @@ class RemoveQuestionFromQuizView(APIView):
             return Response(QuizCreateSerializer(quiz, context={'request': request}, many=False).data, status=status.HTTP_202_ACCEPTED)
         return Response({'detail':'Not found'}, status=status.HTTP_404_NOT_FOUND)
 
-class GetQuizzesByCreatorWithClass(APIView):
-    serializer_class = QuizClassGetSerializer
+class GetQuizzesByCreatorWithCourse(APIView):
+    serializer_class = QuizCourseGetSerializer
     def get(self, request, *args, **kwargs):
-        data = Quiz.objects.filter(created_by=TeacherProfile.objects.get(user=request.user.id), created_for=request.data['class_id']).all()
-        return Response(QuizCreateSerializer(data, many=True, context={'request': request}).data, status=status.HTTP_200_OK)
+        if 'course' in request.data:
+            course = Course.objects.filter(id=request.data['course_id']).first()
+            if hasattr(course, 'id'):
+                data = Quiz.objects.filter(created_by=TeacherProfile.objects.get(user=request.user.id), created_for=request.data['course_id']).all()
+                return Response(QuizCreateSerializer(data, many=True, context={'request': request}).data, status=status.HTTP_200_OK)
+            else:
+                return(Response({'detail': 'not found'}, status=status.HTTP_404_NOT_FOUND))
 
 
 class AnswerCreateAPIView(ListCreateAPIView):

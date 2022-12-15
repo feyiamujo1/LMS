@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from classes.models import Class
+from classes.models import Course
 
-from classes.serializers import ClassInlineSerializer
-from .models import Student, StudentProfile, ClassStudent
+from classes.serializers import CourseInlineSerializer
+from .models import Student, StudentProfile, CourseStudent
 from assignments.models import Assignment
 from announcements.models import Announcement
 
@@ -38,7 +38,7 @@ class StudentDetailSerializer(serializers.ModelSerializer):
         # print(instance, Class.objects.all().first().students)
         data = super(StudentDetailSerializer, self).to_representation(instance)
         data.update({
-            'classes' : ClassInlineSerializer(Class.objects.filter(students__user=instance), many=True, context=self.context).data,
+            'courses' : CourseInlineSerializer(Course.objects.filter(students__user=instance), many=True, context=self.context).data,
             'assignments': Assignment.objects.filter(given_to__students__user=instance).count(),
             # 'classes' : Class.objects.filter(student__user=instance).count(),
         })
@@ -56,12 +56,12 @@ class StudentDetailSerializer(serializers.ModelSerializer):
         model = Student
         fields = ('email', 'firstname', 'lastname', 'password') 
 
-class ClassStudentCreateSerializer(serializers.ModelSerializer):
+class CourseStudentCreateSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='studentship-detail', lookup_field='pk', read_only=True)
     student = serializers.StringRelatedField()
-    class_name = serializers.StringRelatedField()
+    course = serializers.StringRelatedField()
 
     class Meta:
-        model = ClassStudent
-        fields = ('url', 'student', 'class_name', 'date_added')
+        model = CourseStudent
+        fields = ('url', 'student', 'course', 'date_added')
 

@@ -2,8 +2,8 @@ from rest_framework.serializers import Serializer, ModelSerializer
 from rest_framework import serializers
 
 from .models import Question, Quiz, QuizSolution, Answer, AnswerChoice, Score
-from classes.serializers import ClassInlineSerializer
-from classes.models import Class
+from classes.serializers import CourseInlineSerializer
+from classes.models import Course
 
 class AnswerChoicesField(serializers.RelatedField):
     def to_representation(self, value):
@@ -25,7 +25,7 @@ class QuizCreateSerializer(ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(read_only=True)
     url = serializers.HyperlinkedIdentityField(view_name="quiz-update", lookup_field='pk', read_only=True)
     questions = QuestionListSerializer(many=True, required=False)
-    course = ClassInlineSerializer(read_only=True, source='created_for')
+    course = CourseInlineSerializer(read_only=True, source='created_for')
 
     class Meta:
         model = Quiz
@@ -113,5 +113,5 @@ class QuizWithQuestionsSerializer(Serializer):
 class RemoveQuestionSerializer(Serializer):
     questions = serializers.ListField(write_only=True)
 
-class QuizClassGetSerializer(Serializer):
-    class_id = serializers.PrimaryKeyRelatedField(queryset=Class.objects.all(), write_only=True)
+class QuizCourseGetSerializer(Serializer):
+    course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), write_only=True)
