@@ -119,7 +119,7 @@ class QuestionCreateAPIView(ListCreateAPIView):
     
     def perform_create(self, serializer):
         if serializer.is_valid():
-            print(serializer.validated_data)
+            # print(serializer.validated_data)
             data = self.request.data
             current_teacher = TeacherProfile.objects.get(user=self.request.user)
             correct_answer = AnswerChoice.objects.create(created_by=current_teacher, body=serializer.validated_data.get('answer'))
@@ -127,7 +127,7 @@ class QuestionCreateAPIView(ListCreateAPIView):
             correct_answer.refresh_from_db()
             question = Question.objects.create(created_by=current_teacher, body=serializer.validated_data.get('body'), correct_answer=correct_answer)
             question.correct_answer = correct_answer
-            print(serializer.validated_data.get('incorrect_answers'))
+            # print(serializer.validated_data.get('incorrect_answers'))
             if 'incorrect_answers' in serializer.validated_data:
                 for ans in serializer.validated_data.get('incorrect_answers'):
                     incorrect_answer = AnswerChoice.objects.create(created_by=current_teacher, body=ans)

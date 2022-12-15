@@ -58,7 +58,7 @@ class ClassListCreateSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='class-detail', read_only=True)
     class Meta:
         model = Class
-        fields = ('url','name', 'session', 'description', 'date_created', 'created_by')
+        fields = ('id','url','name', 'session', 'description', 'date_created', 'created_by')
 
 
 class ClassInlineSerializer(serializers.Serializer):
