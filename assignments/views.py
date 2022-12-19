@@ -23,7 +23,7 @@ class AssignmentView(ListCreateAPIView):
         if self.request.user.role == "STUDENT":
             student_id = StudentProfile.objects.filter(user=self.request.user.id).first()
             # course = CourseStudent.objects.filter(student=student_id).all()
-            courses = Course.objects.filter(studentship=student_id)
+            courses = Course.objects.filter(studentship__student=student_id)
             return self.queryset.filter(given_to__in=courses)
 
     def create(self, request, *args, **kwargs):
@@ -33,7 +33,7 @@ class AssignmentView(ListCreateAPIView):
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        return Response({'detail':'only staff users can give assignments'}, status=status.HTTP_403_FORBIDDEN, headers=headers)
+        return Response({'detail':'only staff users can give assignments'}, status=status.HTTP_403_FORBIDDEN)
 
     def perform_create(self, serializer):
         teacher_id = TeacherProfile.objects.filter(user=self.request.user.id).first()
