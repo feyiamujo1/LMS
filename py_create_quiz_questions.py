@@ -7,7 +7,7 @@ headers = {
 }
 
 data = {
-        "quiz_id": 1,
+        "quiz_id": 6,
         "questions": [
             {'body': 'How many planets are there?',
             'answer': 'more than 9',

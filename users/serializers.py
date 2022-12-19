@@ -20,5 +20,5 @@ class SuperUserCreateSerializer(serializers.Serializer):
         return admin_user
 
     def update(self, instance, validated_data):
-        return
+        return super().update(instance, validated_data)
 

@@ -1,12 +1,12 @@
 from django.db import models
 from teachers.models import TeacherProfile
-from classes.models import Class
+from classes.models import Course
 from students.models import StudentProfile
 # Create your models here.
 
 class Quiz(models.Model):
     created_by = models.ForeignKey(TeacherProfile, on_delete=models.SET_NULL, null=True)
-    created_for = models.ForeignKey(Class, on_delete=models.CASCADE)
+    created_for = models.ForeignKey(Course, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     date_created = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)

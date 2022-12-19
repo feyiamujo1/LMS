@@ -2,7 +2,7 @@ from datetime import timezone
 from django.db import models
 from teachers.models import TeacherProfile
 from students.models import StudentProfile
-from classes.models import Class
+from classes.models import Course
 
 # Create your models here.
 
@@ -11,7 +11,7 @@ class Assignment(models.Model):
     title = models.CharField(max_length=150)
     body = models.TextField(max_length=1040, null=True, blank=True)
     attachment = models.FileField(upload_to="files/",max_length=20000, null=True,blank=True)
-    given_to = models.ForeignKey(Class, on_delete=models.CASCADE)
+    given_to = models.ForeignKey(Course, on_delete=models.CASCADE)
     given_on = models.DateTimeField(auto_now_add=True)
     deadline = models.DateField(null=True)
     
