@@ -14,7 +14,7 @@ class TeacherCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         email = validated_data.get('email')
         password = validated_data.get('password')
-        print(validated_data)
+        # print(validated_data)
         teacher = User(**validated_data)
         teacher.set_password(password)
         teacher.is_active = True
@@ -55,3 +55,8 @@ class TeacherDetailSerializer(serializers.ModelSerializer):
         model = Teacher
         fields = ('email','firstname','lastname', 'password')
 
+
+class CourseTeacherCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CourseTeacher
+        fields = ('teacher', 'course', 'date_added',)

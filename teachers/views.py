@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from .serializers import TeacherCreateSerializer, TeacherDetailSerializer
-from .models import Teacher
+from .serializers import TeacherCreateSerializer, TeacherDetailSerializer, CourseTeacherCreateSerializer
+from .models import Teacher, CourseTeacher
 from rest_framework.generics import ListCreateAPIView, RetrieveDestroyAPIView, RetrieveUpdateDestroyAPIView
 # Create your views here.
 
@@ -12,3 +12,7 @@ class TeacherListCreateView(ListCreateAPIView):
 class TeacherDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Teacher.teachers.all()
     serializer_class = TeacherDetailSerializer
+
+class CourseTeacherCreateAPIView(ListCreateAPIView):
+    queryset = CourseTeacher.objects.all()
+    serializer_class = CourseTeacherCreateSerializer

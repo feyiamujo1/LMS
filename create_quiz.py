@@ -8,7 +8,7 @@ headers = {
 
 data = {
     'name': 'Lesson 5',
-    'created_for': 2,
+    'created_for': 4,
 }
 
 response = requests.post(endpoint, headers=headers, json=data)
