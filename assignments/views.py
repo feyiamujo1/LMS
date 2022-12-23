@@ -25,7 +25,7 @@ class AssignmentView(ListCreateAPIView):
             # course = CourseStudent.objects.filter(student=student_id).all()
             courses = Course.objects.filter(studentship__student=student_id)
             return self.queryset.filter(given_to__in=courses)
-        return self.queryset()
+        return self.queryset.all()
 
     def create(self, request, *args, **kwargs):
         if self.request.user.role == "STAFF":
