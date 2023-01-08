@@ -3,7 +3,7 @@ from .serializers import (AssignmentDetailSerializer,
         AssignmentInlineSerializer, AssignmentSerializer, 
         AssignmentWithCourseSerializer)
 from .models import Assignment
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveDestroyAPIView
 from teachers.models import TeacherProfile
 from students.models import StudentProfile, CourseStudent
 from classes.models import Course
@@ -28,13 +28,18 @@ class AssignmentView(ListCreateAPIView):
         return self.queryset.all()
 
     def create(self, request, *args, **kwargs):
-        if self.request.user.role == "STAFF":
+        user = self.request.user
+        if user.role == "STAFF":
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        return Response({'detail':'only staff users can give assignments'}, status=status.HTTP_403_FORBIDDEN)
+            course_id = serializer.validated_data.get("given_to").id
+            course = Course.objects.get(id=int(course_id))
+            user_teacher = TeacherProfile.objects.get(user=user)
+            if course.created_by == user_teacher or user_teacher.courses == course:
+                self.perform_create(serializer)
+                headers = self.get_success_headers(serializer.data)
+                return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response({'detail':'only course staff users can give assignments'}, status=status.HTTP_403_FORBIDDEN)
 
     def perform_create(self, serializer):
         teacher_id = TeacherProfile.objects.filter(user=self.request.user.id).first()
@@ -63,10 +68,17 @@ class GetAssignmentsGivenToClassByTeacher(ListCreateAPIView):
             serializer.save(given_by=teacher_id, given_to=get_course)
         return Response({'detail':'course not found'}, status=status.HTTP_404_NOT_FOUND)
 
-class AssignmentDetailView(RetrieveUpdateDestroyAPIView):
+class AssignmentDetailView(RetrieveDestroyAPIView):
     queryset = Assignment.objects.all()
     serializer_class = AssignmentDetailSerializer
 
     def get_queryset(self):
         teacher_id = TeacherProfile.objects.filter(user=self.request.user.id).first()
         return self.queryset.filter(given_by=teacher_id)
+
+    def destroy(self, request, *args, **kwargs):
+        teacher = TeacherProfile.objects.get(user=self.request.user)
+        obj = self.get_object()
+        if obj.given_by == teacher:
+            return super().destroy(request, *args, **kwargs)
+        return Response({'detail':'Not Allowed'}, status=status.HTTP_403_FORBIDDEN)

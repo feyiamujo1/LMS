@@ -21,7 +21,7 @@ class AssignmentDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Assignment
-        fields = ('given_by', 'title', 'body', 'attachment', 
+        fields = ('id', 'given_by', 'title', 'body', 'attachment', 
         'given_to', 'given_on', 'deadline')
 
 
@@ -43,5 +43,11 @@ class AssignmentWithCourseSerializer(serializers.ModelSerializer):
     course = CourseField(read_only=True, source='given_to')
     class Meta:
         model = Assignment
-        fields = ('given_by', 'title', 'body', 'attachment', 
+        fields = ('id', 'given_by', 'title', 'body', 'attachment', 
             'given_to', 'given_on', 'deadline', 'course', 'teacher')
+
+
+#Solutions
+
+class AssignmentSolutionSerializer():
+    pass
