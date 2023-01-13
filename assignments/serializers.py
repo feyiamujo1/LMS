@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Assignment
+from .models import Assignment, Solution
+from students.serializers import StudentProfileInlineSerializer
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -24,15 +25,15 @@ class AssignmentDetailSerializer(serializers.ModelSerializer):
         fields = ('id', 'given_by', 'title', 'body', 'attachment', 
         'given_to', 'given_on', 'deadline')
 
-
-class AssignmentInlineSerializer(serializers.Serializer):
-    given_by = serializers.StringRelatedField(read_only=True)
-    title = serializers.CharField(read_only=True)
-    deadline = serializers.DateTimeField(read_only=True)
-
 class UserProfileField(serializers.RelatedField):
     def to_representation(self, value):
         return {'id':value.pk, 'user name': f"{value.user.firstname} {value.user.lastname}"}
+
+class AssignmentInlineSerializer(serializers.Serializer):
+    given_by = UserProfileField(read_only=True)
+    title = serializers.CharField(read_only=True)
+    deadline = serializers.TimeField(read_only=True)
+
 
 class CourseField(serializers.RelatedField):
     def to_representation(self, value):
@@ -49,5 +50,9 @@ class AssignmentWithCourseSerializer(serializers.ModelSerializer):
 
 #Solutions
 
-class AssignmentSolutionSerializer():
-    pass
+class AssignmentSolutionSerializer(serializers.ModelSerializer):
+    assignment_detail = AssignmentInlineSerializer(source='assignment', read_only=True)
+    student_detail = StudentProfileInlineSerializer(source='student', read_only=True)
+    class Meta:
+        model = Solution
+        fields = ('assignment', 'student', 'assignment_detail', 'student_detail', 'body', 'attachment', 'date_created', 'date_submitted', 'completed', 'turn_in', 'date_marked')

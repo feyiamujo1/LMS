@@ -65,3 +65,10 @@ class CourseStudentCreateSerializer(serializers.ModelSerializer):
         model = CourseStudent
         fields = ('url', 'student', 'course', 'date_added')
 
+class UserInlineSerilizer(serializers.Serializer):
+    firstname = serializers.CharField()
+    lastname = serializers.CharField()
+
+class StudentProfileInlineSerializer(serializers.Serializer):
+    user = UserInlineSerilizer()
+    student_id = serializers.IntegerField()

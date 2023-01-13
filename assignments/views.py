@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from .serializers import (AssignmentDetailSerializer, 
         AssignmentInlineSerializer, AssignmentSerializer, 
-        AssignmentWithCourseSerializer)
-from .models import Assignment
+        AssignmentWithCourseSerializer, AssignmentSolutionSerializer)
+from .models import Assignment, Solution
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveDestroyAPIView
 from teachers.models import TeacherProfile
 from students.models import StudentProfile, CourseStudent
@@ -82,3 +82,11 @@ class AssignmentDetailView(RetrieveDestroyAPIView):
         if obj.given_by == teacher:
             return super().destroy(request, *args, **kwargs)
         return Response({'detail':'Not Allowed'}, status=status.HTTP_403_FORBIDDEN)
+
+
+'''
+Solution Endpoint
+'''
+class SolutionListCreateView(ListCreateAPIView):
+    queryset = Solution.objects.all()
+    serializer_class = AssignmentSolutionSerializer
