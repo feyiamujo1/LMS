@@ -51,6 +51,7 @@ class AssignmentWithCourseSerializer(serializers.ModelSerializer):
 #Solutions
 
 class AssignmentSolutionSerializer(serializers.ModelSerializer):
+    # assignment_id = serializers.IntegerField(write_only=True, required=False)
     assignment_detail = AssignmentInlineSerializer(source='assignment', read_only=True)
     student_detail = StudentProfileInlineSerializer(source='student', read_only=True)
     class Meta:

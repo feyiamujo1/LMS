@@ -2,13 +2,17 @@ from rest_framework import serializers
 from .models import Announcement
 
 
+class UserInlineSerilizer(serializers.Serializer):
+    firstname = serializers.CharField()
+    lastname = serializers.CharField()
+
 class AnnouncementListCreateSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='announcement-detail', read_only=True)
-    posted_to = serializers.StringRelatedField()
-    posted_by = serializers.StringRelatedField()
+    posted_to_detail = UserInlineSerilizer(read_only=True)
+    posted_by_deatil = UserInlineSerilizer(read_only=True)
     class Meta:
         model = Announcement
-        fields = ('url','title','posted_by', 'posted_to', 'body', 'attachment', 'date')
+        fields = ('url','title','posted_by', 'posted_to', 'body', 'attachment', 'date', 'posted_to_detail', 'posted_by_detail')
 
 class AnnouncementInlineSerializer(serializers.Serializer):
     url = serializers.HyperlinkedIdentityField(view_name='announcement-detail', read_only=True)

@@ -90,3 +90,25 @@ Solution Endpoint
 class SolutionListCreateView(ListCreateAPIView):
     queryset = Solution.objects.all()
     serializer_class = AssignmentSolutionSerializer
+
+    def get_queryset(self):
+        if self.request.user.role == "STUDENT":
+            student_id = StudentProfile.objects.filter(user=self.request.user.id).first()
+            return self.queryset.filter(student=student_id)
+        # NOT TESTED
+        if self.request.user.role == "STAFF":
+            teacher_id = TeacherProfile.objects.filter(user=self.request.user.id).first()
+            if "assignment_id" in self.request.data:
+                return self.queryset.filter(assignment=self.request.data['assignment_id'])
+            return self.queryset.filter(assignment__given_by=teacher_id)
+        return super().get_queryset()
+
+    def perform_create(self, serializer):
+        if self.request.user.role == "STUDENT":
+            assignment = serializer.validated_data.get('assignment')
+            student_id = StudentProfile.objects.filter(user=self.request.user.id).first()
+            if assignment.given_to == student_id.courses:
+                serializer.save(student=student_id)
+            return Response({'detail': 'forbidden'}, status=status.HTTP_403_FORBIDDEN)
+        # return super().perform_create(serializer)
+        return Response({'detail': 'forbidden'}, status=status.HTTP_403_FORBIDDEN)
