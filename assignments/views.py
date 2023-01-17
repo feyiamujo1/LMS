@@ -115,7 +115,18 @@ class SolutionListCreateView(ListCreateAPIView):
         return Response({'detail': 'forbidden'}, status=status.HTTP_403_FORBIDDEN)
 
 
-class AssignmentWithSolutionsAPIView(ListAPIView):
+class AssignmentWithSolutionsAPIView(RetrieveDestroyAPIView):
+    queryset = Assignment.objects.all()
+    serializer_class = AssignmentPonSolutionsSerializer
+    permission_classes = [IsStaffAssignmentOwnerOrCoStaff]
+
+    def get_queryset(self):
+        if self.request.user.role == "STAFF":
+            teacher_id = TeacherProfile.objects.filter(user=self.request.user.id).first()
+            return self.queryset.filter(given_by=teacher_id)
+        return self.queryset.all()
+
+class ASLAPI(ListAPIView):
     queryset = Assignment.objects.all()
     serializer_class = AssignmentPonSolutionsSerializer
     permission_classes = [IsStaffAssignmentOwnerOrCoStaff]
