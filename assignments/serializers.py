@@ -57,3 +57,19 @@ class AssignmentSolutionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Solution
         fields = ('assignment', 'student', 'assignment_detail', 'student_detail', 'body', 'attachment', 'date_created', 'date_submitted', 'completed', 'turn_in', 'date_marked')
+
+
+class AssignmentPonSolutionsSerializer(serializers.ModelSerializer):
+    """Mainly for teachers"""
+    def to_representation(self, instance):
+        data = super(AssignmentPonSolutionsSerializer, self).to_representation(instance)
+        data.update({
+            'solutions': AssignmentSolutionSerializer(Solution.objects.filter(assignment=instance), many=True).data
+        })
+        return data
+    teacher = UserProfileField(read_only=True, source='given_by')
+    course = CourseField(read_only=True, source='given_to')
+    class Meta:
+        model = Assignment
+        fields = ('id', 'given_by', 'title', 'body', 'attachment', 
+            'given_to', 'given_on', 'deadline', 'course', 'teacher')

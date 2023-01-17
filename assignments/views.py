@@ -1,14 +1,15 @@
 from django.shortcuts import render
 from .serializers import (AssignmentDetailSerializer, 
         AssignmentInlineSerializer, AssignmentSerializer, 
-        AssignmentWithCourseSerializer, AssignmentSolutionSerializer)
+        AssignmentWithCourseSerializer, AssignmentSolutionSerializer, AssignmentPonSolutionsSerializer)
 from .models import Assignment, Solution
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveDestroyAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveDestroyAPIView, ListAPIView
 from teachers.models import TeacherProfile
 from students.models import StudentProfile, CourseStudent
 from classes.models import Course
 from rest_framework.response import Response
 from rest_framework import status
+from .permissions import IsStaffAssignmentOwnerOrCoStaff
 # Create your views here.
 
 class AssignmentView(ListCreateAPIView):
@@ -112,3 +113,15 @@ class SolutionListCreateView(ListCreateAPIView):
             return Response({'detail': 'forbidden'}, status=status.HTTP_403_FORBIDDEN)
         # return super().perform_create(serializer)
         return Response({'detail': 'forbidden'}, status=status.HTTP_403_FORBIDDEN)
+
+
+class AssignmentWithSolutionsAPIView(ListAPIView):
+    queryset = Assignment.objects.all()
+    serializer_class = AssignmentPonSolutionsSerializer
+    permission_classes = [IsStaffAssignmentOwnerOrCoStaff]
+
+    def get_queryset(self):
+        if self.request.user.role == "STAFF":
+            teacher_id = TeacherProfile.objects.filter(user=self.request.user.id).first()
+            return self.queryset.filter(given_by=teacher_id)
+        return self.queryset.all()
