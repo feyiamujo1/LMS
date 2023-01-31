@@ -1,13 +1,13 @@
 from django.shortcuts import render
 from rest_framework.generics import (ListCreateAPIView, RetrieveUpdateDestroyAPIView, 
-    CreateAPIView, ListAPIView, UpdateAPIView, RetrieveUpdateAPIView)
+    CreateAPIView, ListAPIView, UpdateAPIView, RetrieveUpdateAPIView, RetrieveAPIView)
 from rest_framework.views import APIView
 from .models import Quiz, Question, AnswerChoice, Answer, QuizSolution, Score
 from .serializers import (QuizCreateSerializer, QuestionCreateSerializer,
      AnswerCreateSerializer, QuizSolutionCreateSerializer, AnswerChoiceSerializer,
       ScoreSerializer, QuestionListSerializer,
       QuizUpdateSerializer, QuizWithQuestionsSerializer, RemoveQuestionSerializer,
-      QuizCourseGetSerializer)
+      QuizCourseGetSerializer, QuizSolutionDetailSerializer)
 from teachers.models import TeacherProfile
 from users import authentication
 from rest_framework import authentication as r_auth
@@ -15,6 +15,7 @@ from .permissions import IsAdminOrTeacherPermission
 from rest_framework import serializers, status
 from rest_framework.response import Response
 from classes.models import Course
+from students.models import StudentProfile
 # Create your views here.
 
 class QuizAPIView(ListCreateAPIView):
@@ -242,6 +243,64 @@ class GetQuizzesByCreatorWithCourse(APIView):
             else:
                 return(Response({'detail': 'not found'}, status=status.HTTP_404_NOT_FOUND))
 
+
+"""
+amswers: [
+    {
+        "question_id":6,
+        "answer_choice_id":6
+    },
+    {
+        "question_id":26,
+        "answer_choice_id":72
+    },
+    ...
+]
+"""
+class QuizDetailAPIView(RetrieveAPIView):
+    queryset = Quiz.objects.all()
+    serializer_class = QuizCreateSerializer
+
+    # def get_serializer_class(self):
+    #     if self.action == "retrieve":
+    #         return QuizCreateSerializer
+    #     if self.action == "update":
+    #         return 
+    #     return QuizCreateSerializer
+
+    def post(self, request, *args, **kwargs):
+        if request.user.role != "STUDENT":
+            return Response({'detail':'forbidden'}, status=status.HTTP_403_FORBIDDEN)
+        student = StudentProfile.objects.get(user=request.user)
+        quiz = self.get_object()
+        solution = QuizSolution.objects.create(quiz=quiz, student=student)
+        solution.refresh_from_db()
+        if 'answers' in request.data:
+            for answer in request.data['answers']:
+                question = Question.objects.get((answer['question_id']))
+                answer_choice = AnswerChoice.objects.get((answer['answer_choice_id']))
+                answer = Answer.objects.create(quiz_solution=solution, question=question, body=answer_choice)
+                answer.refresh_from_db()
+        
+
+class QuizSolutionDetailAPIView(RetrieveAPIView):
+    queryset = Quiz.objects.all()
+    serializer_class = QuizCreateSerializer
+    
+    def get(self, request, *args, **kwargs):
+        quiz = self.get_object()
+        if self.request.user.role == "STUDENT":
+            student_id = StudentProfile.objects.filter(user=self.request.user.id).first()
+            quiz_solution = QuizSolution.objects.filter(quiz=quiz, student=student_id).first()
+            data = QuizSolutionDetailSerializer(quiz_solution).data if quiz_solution else {"detail":"not found"}
+        if self.request.user.role == "STAFF":
+            teacher_id = TeacherProfile.objects.filter(user=self.request.user.id).first()
+            quiz_solution = QuizSolution.objects.filter(quiz=quiz).all()
+            data = QuizSolutionDetailSerializer(quiz_solution, many=True).data
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+# class QuizSubmitAPIView(APIView):
 
 class AnswerCreateAPIView(ListCreateAPIView):
     queryset = Answer.objects.all()

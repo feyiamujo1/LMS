@@ -109,6 +109,25 @@ class QuizWithQuestionsSerializer(Serializer):
     quiz_id = serializers.PrimaryKeyRelatedField(queryset=Quiz.objects.all())
     questions = QuestionCreateSerializer(many=True, write_only=True)
 
+class QuizInlineSerializer(Serializer):
+    name = serializers.CharField()
+    # questions = QuestionListSerializer(many=True)
+
+class UserProfileField(serializers.RelatedField):
+    def to_representation(self, value):
+        return {'id':value.pk, 'user name': f"{value.user.firstname} {value.user.lastname}"}
+
+class QuizSolutionDetailSerializer(Serializer):
+    quiz = QuizInlineSerializer(read_only=True)
+    student = UserProfileField(read_only=True)
+
+    def to_representation(self, instance):
+        data = super(QuizSolutionDetailSerializer, self).to_representation(instance)
+        answers = Answer.objects.filter(quiz_solution=instance)
+        data.update({
+            'answers': AnswerSerializer(answers, many=True, context=self.context).data,
+            'score': len([x.id for x in answers if x.correct()])
+        })
 
 class RemoveQuestionSerializer(Serializer):
     questions = serializers.ListField(write_only=True)

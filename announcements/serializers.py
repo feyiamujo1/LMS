@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Announcement
+from .models import Announcement, Lesson
 
 
 class UserInlineSerilizer(serializers.Serializer):
@@ -19,3 +19,8 @@ class AnnouncementInlineSerializer(serializers.Serializer):
     title = serializers.CharField(read_only=True)
     posted_by = serializers.StringRelatedField(read_only=True)
     date = serializers.DateTimeField(read_only=True)
+
+class LessonListCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = '__all__'

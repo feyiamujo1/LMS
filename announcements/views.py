@@ -1,10 +1,10 @@
 from django.shortcuts import render
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from announcements.models import Announcement
+from announcements.models import Announcement, Lesson
 from students.models import StudentProfile
 from teachers.models import TeacherProfile
 
-from announcements.serializers import AnnouncementListCreateSerializer
+from announcements.serializers import AnnouncementListCreateSerializer, LessonListCreateSerializer
 # Create your views here.
 
 class AnnouncementListCreateView(ListCreateAPIView):
@@ -23,3 +23,7 @@ class AnnouncementListCreateView(ListCreateAPIView):
 class AnnouncementDetailView(RetrieveUpdateDestroyAPIView):
     serializer_class = AnnouncementListCreateSerializer
     queryset = Announcement.objects.all()
+
+class LessonCreateAPIView(ListCreateAPIView):
+    serializer_class = LessonListCreateSerializer
+    queryset = Lesson.objects.all()

@@ -5,6 +5,43 @@ from students.models import Student, StudentProfile, CourseStudent
 from .models import Course
 from teachers.models import Teacher
 from announcements.serializers import AnnouncementInlineSerializer
+from assignments.models import Assignment
+from rest_framework.reverse import reverse
+from rest_framework.serializers import ModelSerializer
+from quizzes.models import Quiz
+
+
+
+class UserProfileField(serializers.RelatedField):
+    def to_representation(self, value):
+        return {'id':value.pk, 'user name': f"{value.user.firstname} {value.user.lastname}"}
+
+class QuizInlineSerializer(serializers.Serializer):
+    id = serializers.PrimaryKeyRelatedField(read_only=True)
+    created_by = UserProfileField(read_only=True)
+    created_for = serializers.CharField()
+    name = serializers.CharField(read_only=True)
+    date_created = serializers.DateTimeField(read_only=True)
+    url = serializers.SerializerMethodField()
+
+    def get_url(self, obj):
+        request = self.context.get('request')
+        if request is None:
+            return None
+        return reverse("quiz-detail", kwargs={"pk":obj.id}, request=request)
+
+class AssignmentInlineSerializer(serializers.Serializer):
+    id = serializers.PrimaryKeyRelatedField(read_only=True)
+    given_by = UserProfileField(read_only=True)
+    title = serializers.CharField(read_only=True)
+    deadline = serializers.TimeField(read_only=True)
+    url = serializers.SerializerMethodField()
+
+    def get_url(self, obj):
+        request = self.context.get('request')
+        if request is None:
+            return None
+        return reverse("assignment-solutions", kwargs={"pk": obj.id}, request=request)
 
 class TeacherInlineSerializer(serializers.Serializer):
     # url = serializers.HyperlinkedIdentityField(view_name='teacher-detail', lookup_field='pk', read_only=True)
@@ -44,9 +81,11 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super(CourseDetailSerializer, self).to_representation(instance)
         data.update({
-            'teachers': TeacherInlineSerializer(Teacher.objects.filter(teacherprofile__adminship__course=instance), many=True).data,
-            'students': StudentInlineSerializer(Student.objects.filter(studentprofile__courses__id=instance.id), many=True, context=self.context).data,
-            'announcements' : AnnouncementInlineSerializer(Announcement.objects.filter(posted_to=instance), many=True, context=self.context).data,
+            # 'teachers': TeacherInlineSerializer(Teacher.objects.filter(teacherprofile__adminship__course=instance), many=True).data,
+            'students': StudentInlineSerializer(Student.objects.filter(studentprofile__courses=instance), many=True, context=self.context).data,
+            # 'announcements' : AnnouncementInlineSerializer(Announcement.objects.filter(posted_to=instance), many=True, context=self.context).data,
+            'assignments': AssignmentInlineSerializer(Assignment.objects.filter(given_to=instance), many=True, context=self.context).data,
+            'quizzes': QuizInlineSerializer(Quiz.objects.filter(created_for=instance), many=True, context=self.context).data,
         })
 
         return data
