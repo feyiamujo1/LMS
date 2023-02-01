@@ -21,7 +21,7 @@ class Lesson(models.Model):
     title = models.CharField(max_length=1000)
     intro = models.TextField(max_length=10000)
     file = models.FileField(upload_to="files/", null=True, blank=True)
-    image = models.ImageField(upload_to="images/")
+    image = models.ImageField(upload_to="images/", null=True, blank=True)
     audio = models.FileField(upload_to="files/", null=True, blank=True)
     date = models.DateTimeField(auto_now_add=True)
     link1 = models.URLField(max_length=100, null=True, blank=True)

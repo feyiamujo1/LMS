@@ -1,7 +1,7 @@
 from django.shortcuts import render
-from .serializers import CourseDetailSerializer, CourseListCreateSerializer, CourseInlineSerializer
+from .serializers import CourseDetailSerializer, CourseLessonsSerializer, CourseListCreateSerializer, CourseInlineSerializer
 from .models import Course
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, RetrieveAPIView
 from teachers.models import TeacherProfile
 from students.models import StudentProfile
 from assignments.views import AssignmentView
@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from assignments.models import Assignment
 from quizzes.models import Quiz
+from announcements.models import Lesson
 # Create your views here.
 
 class CourseView(ListCreateAPIView):
@@ -63,3 +64,7 @@ class CoursesWithQuizzes(ListAPIView):
 class CourseDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseDetailSerializer
+
+class CourseLessons(RetrieveAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseLessonsSerializer
