@@ -1,10 +1,10 @@
 from rest_framework import serializers
-from announcements.models import Announcement
+from announcements.models import Announcement, Lesson
 
 from students.models import Student, StudentProfile, CourseStudent
 from .models import Course
 from teachers.models import Teacher
-from announcements.serializers import AnnouncementInlineSerializer
+from announcements.serializers import AnnouncementInlineSerializer, LessonListCreateSerializer
 from assignments.models import Assignment
 from rest_framework.reverse import reverse
 from rest_framework.serializers import ModelSerializer
@@ -77,6 +77,7 @@ class StudentInlineSerializer(serializers.Serializer):
 class CourseDetailSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='course-detail', lookup_field='pk', read_only=True)
     created_by = serializers.StringRelatedField()
+    lessons_url = serializers.HyperlinkedIdentityField(view_name='course-lessons')
 
     def to_representation(self, instance):
         data = super(CourseDetailSerializer, self).to_representation(instance)
@@ -91,7 +92,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
         return data
     class Meta:
         model = Course
-        fields = ('url','id', 'name', 'session', 'description', 'created_by')
+        fields = ('url', 'lessons_url','id', 'name', 'session', 'description', 'created_by')
 
 class CourseListCreateSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='course-detail', read_only=True)
@@ -105,3 +106,16 @@ class CourseInlineSerializer(serializers.Serializer):
     url = serializers.HyperlinkedIdentityField(view_name='course-detail', lookup_field='pk', read_only=True)
     name = serializers.CharField(read_only=True)
     session = serializers.CharField(read_only=True)
+
+class CourseLessonsSerializer(serializers.Serializer):
+    id = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all())
+    url = serializers.HyperlinkedIdentityField(view_name='course-detail', lookup_field='pk', read_only=True)
+    name = serializers.CharField(read_only=True)
+
+    def to_representation(self, instance):
+        data = super(CourseLessonsSerializer, self).to_representation(instance)
+        data.update({
+            'lessons': LessonListCreateSerializer(Lesson.objects.filter(course=instance).all(), many=True).data
+        })
+        return data
+
